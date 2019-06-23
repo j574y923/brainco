@@ -9,11 +9,39 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.json.*;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonNumber;
+import javax.json.JsonObject;
+import javax.json.JsonString;
+import javax.json.JsonValue;
 
+
+/**
+ * This service is a minimal HTTP service that exposes the user and group
+ * information on a UNIX-like system that is usually locked away in the UNIX
+ * /etc/passwd and /etc/groups files.
+ * 
+ * This service is read-only but responses should reflect changes made to the
+ * underlying passwd and groups files while the service is running.
+ * 
+ * @author j574y
+ *
+ */
 @Controller
 public class BrainCorpController {
 
+	/**
+	 * 
+	 * Returns a list of all users on the system, as defined in the /etc/passwd
+	 * file.
+	 * 
+	 * Example Response: [ {“name”: “root”, “uid”: 0, “gid”: 0, “comment”: “root”,
+	 * “home”: “/root”, “shell”: “/bin/bash”}, {“name”: “dwoodlins”, “uid”: 1001,
+	 * “gid”: 1001, “comment”: “”, “home”: “/home/dwoodlins”, “shell”: “/bin/false”}
+	 * ]
+	 */
 	@RequestMapping("/users")
 	public @ResponseBody String getUsers() {
 		ConfigReader configReader = new ConfigReader();
@@ -23,10 +51,26 @@ public class BrainCorpController {
 		return passwdReader.getContentsJson().toString();
 	}
 
+	/**
+	 * Returns a list of users matching all of the specified query fields. The
+	 * bracket notation indicates that any of the following query parameters may be
+	 * supplied:
+	 * 
+	 * @param name
+	 * @param uid
+	 * @param gid
+	 * @param comment
+	 * @param home
+	 * @param shell
+	 * 
+	 * Only exact matches are supported. Example Query: GET
+	 * /users/query?shell=%2Fbin%2Ffalse Example Response: [ {“name”: “dwoodlins”,
+	 * “uid”: 1001, “gid”: 1001, “comment”: “”, “home”: “/home/dwoodlins”, “shell”:
+	 * “/bin/false”} ]
+	 */
 	@RequestMapping("/users/query")
 	public @ResponseBody String getUsersQuery(@RequestParam(required = false) String name,
-			@RequestParam(required = false) String uid,
-			@RequestParam(required = false) String gid,
+			@RequestParam(required = false) String uid, @RequestParam(required = false) String gid,
 			@RequestParam(required = false) String comment,
 			@RequestParam(required = false) String home,
 			@RequestParam(required = false) String shell) {
@@ -82,7 +126,13 @@ public class BrainCorpController {
 		return jsonArrBuilder.build().toString();
 	}
 
-	@RequestMapping(value = "users/{uid}")
+	/**
+	 * Returns a single user with <uid>. Return 404 if <uid> is not found.
+	 * 
+	 * Example Response: {“name”: “dwoodlins”, “uid”: 1001, “gid”: 1001, “comment”:
+	 * “”, “home”: “/home/dwoodlins”, “shell”: “/bin/false”}
+	 */
+	@RequestMapping(value = "/users/{uid}")
 	public @ResponseBody String getUsersUid(@PathVariable("uid") String uid) {
 		ConfigReader configReader = new ConfigReader();
 		configReader.read();
@@ -97,7 +147,13 @@ public class BrainCorpController {
 		return "";
     }
 
-	@RequestMapping(value = "users/{uid}/groups")
+	/**
+	 * Returns all the groups for a given user.
+	 * 
+	 * Example Response: [ {“name”: “docker”, “gid”: 1002, “members”: [“dwoodlins”]}
+	 * ]
+	 */
+	@RequestMapping(value = "/users/{uid}/groups")
 	public @ResponseBody String getGroupsUid(@PathVariable("uid") String uid) {
 		ConfigReader configReader = new ConfigReader();
 		configReader.read();
@@ -133,6 +189,13 @@ public class BrainCorpController {
 		return jsonArrBuilder.build().toString();
     }
 
+	/**
+	 * Returns a list of all groups on the system, a defined by /etc/group.
+	 *
+	 * Example Response: [ {“name”: “_analyticsusers”, “gid”: 250, “members”:
+	 * [“_analyticsd’,”_networkd”,”_timed”]}, {“name”: “docker”, “gid”: 1002,
+	 * “members”: []}
+	 */
 	@RequestMapping(value = "/groups")
 	public @ResponseBody String getGroups() {
 		ConfigReader configReader = new ConfigReader();
@@ -142,6 +205,21 @@ public class BrainCorpController {
 		return groupReader.getContentsJson().toString();
     }
 
+	/**
+	 * Return a list of groups matching all of the specified query fields. The
+	 * bracket notation indicates that any of the following query parameters may be
+	 * supplied:
+	 * 
+	 * @param name
+	 * @param gid
+	 * @param member (repeated)
+	 * 
+	 * Any group containing all the specified members should be returned, i.e. when
+	 * query members are a subset of group members. Example Query: GET
+	 * /groups/query?member=_analyticsd&member=_networkd Example Response: [
+	 * {“name”: “_analyticsusers”, “gid”: 250, “members”:
+	 * [“_analyticsd’,”_networkd”,”_timed”]} ]
+	 */
 	@RequestMapping(value = "/groups/query")
 	public @ResponseBody String getGroupsQuery(@RequestParam(required = false) String name,
 			@RequestParam(required = false) String gid,
@@ -179,9 +257,14 @@ public class BrainCorpController {
 			jsonArrBuilder.add(jsonObj);
 		}
 		return jsonArrBuilder.build().toString();
-    }
-	
-	@RequestMapping(value = "groups/{gid}")
+	}
+
+	/**
+	 * Returns a single group with <gid>. Return 404 if <gid> is not found.
+	 * 
+	 * Example Response: {“name”: “docker”, “gid”: 1002, “members”: [“dwoodlins”]}
+	 */
+	@RequestMapping(value = "/groups/{gid}")
 	public @ResponseBody String getGroupsGid(@PathVariable("gid") String gid) {
 		ConfigReader configReader = new ConfigReader();
 		configReader.read();
