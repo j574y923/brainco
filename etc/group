@@ -17,7 +17,7 @@ wheel:x:998:
 kmem:x:997:
 tty:x:5:
 utmp:x:996:
-audio:x:995:
+audio:x:995:user1,user2,user3
 disk:x:994:
 input:x:993:
 kvm:x:992:

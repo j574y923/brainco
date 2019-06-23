@@ -9,7 +9,6 @@ import java.io.InputStreamReader;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 public class GroupReader {
@@ -58,7 +57,14 @@ public class GroupReader {
 					jsonBuilder.add("name", values[0]);
 					break;
 				case 2:
-					jsonBuilder.add("gid", values[2]);
+					int gid = -1;
+					try {
+						gid = Integer.parseInt(values[2]);
+					} catch (NumberFormatException e) {
+						gid = -1;
+						e.printStackTrace();
+					}
+					jsonBuilder.add("gid", gid);
 					break;
 				case 3:
 					JsonArrayBuilder jsonMembersArrBuilder = Json.createArrayBuilder();

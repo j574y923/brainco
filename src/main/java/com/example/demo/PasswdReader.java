@@ -60,10 +60,24 @@ public class PasswdReader {
 					jsonBuilder.add("name", values[0]);
 					break;
 				case 2:
-					jsonBuilder.add("uid", values[2]);
+					int uid = -1;
+					try {
+						uid = Integer.parseInt(values[2]);
+					} catch (NumberFormatException e) {
+						uid = -1;
+						e.printStackTrace();
+					}
+					jsonBuilder.add("uid", uid);
 					break;
 				case 3:
-					jsonBuilder.add("gid", values[3]);
+					int gid = -1;
+					try {
+						gid = Integer.parseInt(values[3]);
+					} catch (NumberFormatException e) {
+						gid = -1;
+						e.printStackTrace();
+					}
+					jsonBuilder.add("gid", gid);
 					break;
 				case 4:
 					jsonBuilder.add("comment", values[4]);
