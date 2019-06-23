@@ -5,11 +5,17 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonNumber;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonString;
+import javax.json.JsonValue;
 
 public class GroupReader {
 	
@@ -88,5 +94,66 @@ public class GroupReader {
 	
 	public JsonArray getContentsJson() {
 		return contentsJson;
+	}
+	
+	public JsonArray getGroupsUsername(String username) {
+
+		JsonArrayBuilder jsonArrBuilder = Json.createArrayBuilder();
+		if (!username.equals("")) {
+			JsonArray jsonArr = contentsJson;
+			for(JsonValue jsonObj : jsonArr) {
+				JsonArray jsonMembers = (JsonArray) ((JsonObject)jsonObj).get("members");
+				for(JsonValue jsonMember : jsonMembers) {
+					if (jsonMember.toString().equals(username)) {
+						jsonArrBuilder.add(jsonObj);
+					}
+				}
+			}
+		}
+		
+		return jsonArrBuilder.build();
+	}
+
+	public JsonArray getGroupsQuery(String name, String gid, List<String> member) {
+
+		JsonArrayBuilder jsonArrBuilder = Json.createArrayBuilder();
+		JsonArray jsonArr = contentsJson;
+		for(JsonValue jsonObj : jsonArr) {
+			if (name != null) {
+				JsonString jsonName = (JsonString) ((JsonObject) jsonObj).get("name");
+				String jsonNameTidy = jsonName.toString();
+				jsonNameTidy = jsonNameTidy.substring(1, jsonNameTidy.length() - 1);
+				if (!jsonNameTidy.equals(name))
+					continue;
+			}
+			if (gid != null) {
+				JsonNumber jsonGid = (JsonNumber) ((JsonObject)jsonObj).get("gid");
+				if (!jsonGid.toString().equals(gid))
+					continue;
+			}
+			if (member != null) {
+				JsonArray jsonMembers = (JsonArray) ((JsonObject)jsonObj).get("members");
+				List<String> strMembers = new ArrayList<String>();
+				for (int i = 0; i < jsonMembers.size(); i++) {
+					strMembers.add(jsonMembers.getString(i));
+				}
+				if (!strMembers.containsAll(member))
+					continue;
+			}
+			
+			jsonArrBuilder.add(jsonObj);
+		}
+		return jsonArrBuilder.build();
+	}
+	
+	public JsonObject getGroupsGid(String gid) {
+
+		JsonArray jsonArr = contentsJson;
+		for (JsonValue jsonObj : jsonArr) {
+			JsonNumber jsonGid = (JsonNumber) ((JsonObject) jsonObj).get("gid");
+			if (jsonGid.toString().equals(gid))
+				return (JsonObject) jsonObj;
+		}
+		return null;
 	}
 }
