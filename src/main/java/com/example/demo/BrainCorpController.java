@@ -21,8 +21,8 @@ public class BrainCorpController {
 
 	@RequestMapping("/users/query")
 	public @ResponseBody String getUsersQuery(@RequestParam(required = false) String name,
-			@RequestParam(required = false) int uid,
-			@RequestParam(required = false) int gid,
+			@RequestParam(required = false) String uid,
+			@RequestParam(required = false) String gid,
 			@RequestParam(required = false) String comment,
 			@RequestParam(required = false) String home,
 			@RequestParam(required = false) String shell) {
@@ -30,12 +30,12 @@ public class BrainCorpController {
 	}
 
 	@RequestMapping(value = "users/{uid}")
-	public @ResponseBody String getUsersUid(@PathVariable("uid") int uid) {
+	public @ResponseBody String getUsersUid(@PathVariable("uid") String uid) {
 		return "TODO" + uid;
     }
 
 	@RequestMapping(value = "users/{uid}/groups")
-	public @ResponseBody String getGroupsUid(@PathVariable("uid") int uid) {
+	public @ResponseBody String getGroupsUid(@PathVariable("uid") String uid) {
 		return "TODO" + uid;
     }
 
@@ -46,13 +46,13 @@ public class BrainCorpController {
 
 	@RequestMapping(value = "/groups/query")
 	public @ResponseBody String getGroupsQuery(@RequestParam(required = false) String name,
-			@RequestParam(required = false) int gid,
+			@RequestParam(required = false) String gid,
 			@RequestParam(required = false) List<String> member) {
 		return "TODO" + member;
     }
 	
 	@RequestMapping(value = "groups/{gid}")
-	public @ResponseBody String getGroupsGid(@PathVariable("gid") int gid) {
+	public @ResponseBody String getGroupsGid(@PathVariable("gid") String gid) {
 		return "TODO" + gid;
-    }
+	}
 }
