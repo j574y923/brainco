@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -15,7 +16,7 @@ public class GroupReader {
 	
 	private String groupPath = "";
 	private String contents = "";
-	private JsonObject contentsJson = null;
+	private JsonArray contentsJson = null;
 	
 	public GroupReader(String passwdPath) {
 		this.groupPath = passwdPath;
@@ -40,28 +41,46 @@ public class GroupReader {
 	}
 	
 	private void readToJSON(String passwdContents) {
-		JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+		JsonArrayBuilder jsonArrBuilder = Json.createArrayBuilder();
 		String[] lines = passwdContents.split("\n");
 		for(String line : lines) {
-			String[] values = line.split(":");
-			jsonBuilder.add("name", values[0]);
-			jsonBuilder.add("gid", values[2]);
+			// initialize json values
+			JsonObjectBuilder jsonBuilder = Json.createObjectBuilder()
+					.add("name", "")
+					.add("gid", -1)
+					.add("members", Json.createArrayBuilder());
 			
-			JsonArrayBuilder jsonArrBuilder = Json.createArrayBuilder();
-			String[] valuesMembers = values[3].split(",");
-			for(String valuesMember : valuesMembers ) {
-				jsonArrBuilder.add(valuesMember);
+			// fill in json values
+			String[] values = line.split(":");
+			for(int i = 0; i < values.length; i++) {
+				switch(i) {
+				case 0:
+					jsonBuilder.add("name", values[0]);
+					break;
+				case 2:
+					jsonBuilder.add("gid", values[2]);
+					break;
+				case 3:
+					JsonArrayBuilder jsonMembersArrBuilder = Json.createArrayBuilder();
+					String[] valuesMembers = values[3].split(",");
+					for(String valuesMember : valuesMembers ) {
+						jsonMembersArrBuilder.add(valuesMember);
+					}
+					jsonBuilder.add("members", jsonMembersArrBuilder);
+					break;
+				}
 			}
-			jsonBuilder.add("members", jsonArrBuilder);
+			
+			jsonArrBuilder.add(jsonBuilder);
 		}
-		contentsJson = jsonBuilder.build();
+		contentsJson = jsonArrBuilder.build();
 	}
 	
 	public String getContents() {
 		return contents;
 	}
 	
-	public JsonObject getContentsJson() {
+	public JsonArray getContentsJson() {
 		return contentsJson;
 	}
 }

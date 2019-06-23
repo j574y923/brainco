@@ -7,14 +7,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import javax.json.Json;
-import javax.json.JsonObject;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 
 public class PasswdReader {
 	
 	private String passwdPath = "";
 	private String contents = "";
-	private JsonObject contentsJson = null;
+	private JsonArray contentsJson = null;
 	
 	public PasswdReader(String passwdPath) {
 		this.passwdPath = passwdPath;
@@ -39,25 +40,53 @@ public class PasswdReader {
 	}
 	
 	private void readToJSON(String passwdContents) {
-		JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+		JsonArrayBuilder jsonArrBuilder = Json.createArrayBuilder();
 		String[] lines = passwdContents.split("\n");
 		for(String line : lines) {
+			// initialize json values
+			JsonObjectBuilder jsonBuilder = Json.createObjectBuilder()
+					.add("name", "")
+					.add("uid", -1)
+					.add("gid", -1)
+					.add("comment", "")
+					.add("root", "")
+					.add("shell", "");
+			
+			// fill in json values
 			String[] values = line.split(":");
-			jsonBuilder.add("name", values[0]);
-			jsonBuilder.add("uid", values[2]);
-			jsonBuilder.add("gid", values[3]);
-			jsonBuilder.add("comment", values[4]);
-			jsonBuilder.add("root", values[5]);
-			jsonBuilder.add("shell", values[6]);
+			for(int i = 0; i < values.length; i++) {
+				switch(i) {
+				case 0:
+					jsonBuilder.add("name", values[0]);
+					break;
+				case 2:
+					jsonBuilder.add("uid", values[2]);
+					break;
+				case 3:
+					jsonBuilder.add("gid", values[3]);
+					break;
+				case 4:
+					jsonBuilder.add("comment", values[4]);
+					break;
+				case 5:
+					jsonBuilder.add("root", values[5]);
+					break;
+				case 6:
+					jsonBuilder.add("shell", values[6]);
+					break;
+				}
+			}
+			
+			jsonArrBuilder.add(jsonBuilder);
 		}
-		contentsJson = jsonBuilder.build();
+		contentsJson = jsonArrBuilder.build();
 	}
 	
 	public String getContents() {
 		return contents;
 	}
 	
-	public JsonObject getContentsJson() {
+	public JsonArray getContentsJson() {
 		return contentsJson;
 	}
 }

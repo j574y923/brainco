@@ -15,8 +15,12 @@ public class BrainCorpController {
 
 	@RequestMapping("/users")
 	public @ResponseBody String getUsers() {
-		//TODO:
-		return "{\"lol\":\"TODO!!\"}";
+		ConfigReader configReader = new ConfigReader();
+		configReader.read();
+		
+		PasswdReader passwdReader = new PasswdReader(configReader.getPasswdPath());
+		passwdReader.read();
+		return passwdReader.getContentsJson().toString();
 	}
 
 	@RequestMapping("/users/query")
@@ -41,7 +45,12 @@ public class BrainCorpController {
 
 	@RequestMapping(value = "/groups")
 	public @ResponseBody String getGroups() {
-		return "TODO";
+		ConfigReader configReader = new ConfigReader();
+		configReader.read();
+		
+		GroupReader groupReader = new GroupReader(configReader.getGroupPath());
+		groupReader.read();
+		return groupReader.getContentsJson().toString();
     }
 
 	@RequestMapping(value = "/groups/query")
