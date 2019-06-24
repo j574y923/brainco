@@ -13,8 +13,8 @@ public class ConfigReader {
 	private String passwdPath = "";
 	private String groupPath = "";
 	
-	public void read() {
-        try (InputStream input = new FileInputStream(CONFIG_PATH + "/" + CONFIG_NAME)) {
+	public void read() throws IOException {
+        InputStream input = new FileInputStream(CONFIG_PATH + "/" + CONFIG_NAME);
 
             Properties prop = new Properties();
 
@@ -23,9 +23,6 @@ public class ConfigReader {
             passwdPath = prop.getProperty("passwd");
             groupPath = prop.getProperty("group");
 
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
 	}
 	
 	public String getPasswdPath() {

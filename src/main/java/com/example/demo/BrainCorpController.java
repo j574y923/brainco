@@ -1,15 +1,18 @@
 package com.example.demo;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.io.IOException;
 import java.util.List;
 
+import javax.json.Json;
 import javax.json.JsonObject;
-
 
 /**
  * This service is a minimal HTTP service that exposes the user and group
@@ -34,9 +37,10 @@ public class BrainCorpController {
 	 * “home”: “/root”, “shell”: “/bin/bash”}, {“name”: “dwoodlins”, “uid”: 1001,
 	 * “gid”: 1001, “comment”: “”, “home”: “/home/dwoodlins”, “shell”: “/bin/false”}
 	 * ]
+	 * @throws IOException 
 	 */
 	@RequestMapping("/users")
-	public @ResponseBody String getUsers() {
+	public @ResponseBody String getUsers() throws IOException {
 		ConfigReader configReader = new ConfigReader();
 		configReader.read();
 		PasswdReader passwdReader = new PasswdReader(configReader.getPasswdPath());
@@ -60,13 +64,14 @@ public class BrainCorpController {
 	 * /users/query?shell=%2Fbin%2Ffalse Example Response: [ {“name”: “dwoodlins”,
 	 * “uid”: 1001, “gid”: 1001, “comment”: “”, “home”: “/home/dwoodlins”, “shell”:
 	 * “/bin/false”} ]
+	 * @throws IOException 
 	 */
 	@RequestMapping("/users/query")
 	public @ResponseBody String getUsersQuery(@RequestParam(required = false) String name,
 			@RequestParam(required = false) String uid, @RequestParam(required = false) String gid,
 			@RequestParam(required = false) String comment,
 			@RequestParam(required = false) String home,
-			@RequestParam(required = false) String shell) {
+			@RequestParam(required = false) String shell) throws IOException {
 		ConfigReader configReader = new ConfigReader();
 		configReader.read();
 		PasswdReader passwdReader = new PasswdReader(configReader.getPasswdPath());
@@ -79,9 +84,10 @@ public class BrainCorpController {
 	 * 
 	 * Example Response: {“name”: “dwoodlins”, “uid”: 1001, “gid”: 1001, “comment”:
 	 * “”, “home”: “/home/dwoodlins”, “shell”: “/bin/false”}
+	 * @throws IOException 
 	 */
 	@RequestMapping(value = "/users/{uid}")
-	public @ResponseBody String getUsersUid(@PathVariable("uid") String uid) {
+	public @ResponseBody String getUsersUid(@PathVariable("uid") String uid) throws IOException {
 		ConfigReader configReader = new ConfigReader();
 		configReader.read();
 		PasswdReader passwdReader = new PasswdReader(configReader.getPasswdPath());
@@ -95,9 +101,10 @@ public class BrainCorpController {
 	 * 
 	 * Example Response: [ {“name”: “docker”, “gid”: 1002, “members”: [“dwoodlins”]}
 	 * ]
+	 * @throws IOException 
 	 */
 	@RequestMapping(value = "/users/{uid}/groups")
-	public @ResponseBody String getGroupsUid(@PathVariable("uid") String uid) {
+	public @ResponseBody String getGroupsUid(@PathVariable("uid") String uid) throws IOException {
 		ConfigReader configReader = new ConfigReader();
 		configReader.read();
 		PasswdReader passwdReader = new PasswdReader(configReader.getPasswdPath());
@@ -119,9 +126,10 @@ public class BrainCorpController {
 	 * Example Response: [ {“name”: “_analyticsusers”, “gid”: 250, “members”:
 	 * [“_analyticsd’,”_networkd”,”_timed”]}, {“name”: “docker”, “gid”: 1002,
 	 * “members”: []}
+	 * @throws IOException 
 	 */
 	@RequestMapping(value = "/groups")
-	public @ResponseBody String getGroups() {
+	public @ResponseBody String getGroups() throws IOException {
 		ConfigReader configReader = new ConfigReader();
 		configReader.read();
 		GroupReader groupReader = new GroupReader(configReader.getGroupPath());
@@ -143,11 +151,12 @@ public class BrainCorpController {
 	 * /groups/query?member=_analyticsd&member=_networkd Example Response: [
 	 * {“name”: “_analyticsusers”, “gid”: 250, “members”:
 	 * [“_analyticsd’,”_networkd”,”_timed”]} ]
+	 * @throws IOException 
 	 */
 	@RequestMapping(value = "/groups/query")
 	public @ResponseBody String getGroupsQuery(@RequestParam(required = false) String name,
 			@RequestParam(required = false) String gid,
-			@RequestParam(required = false) List<String> member) {
+			@RequestParam(required = false) List<String> member) throws IOException {
 		ConfigReader configReader = new ConfigReader();
 		configReader.read();
 		GroupReader groupReader = new GroupReader(configReader.getGroupPath());
@@ -159,14 +168,28 @@ public class BrainCorpController {
 	 * Returns a single group with <gid>. Return 404 if <gid> is not found.
 	 * 
 	 * Example Response: {“name”: “docker”, “gid”: 1002, “members”: [“dwoodlins”]}
+	 * @throws IOException 
 	 */
 	@RequestMapping(value = "/groups/{gid}")
-	public @ResponseBody String getGroupsGid(@PathVariable("gid") String gid) {
+	public @ResponseBody ResponseEntity<String> getGroupsGid(@PathVariable("gid") String gid) throws IOException {
 		ConfigReader configReader = new ConfigReader();
 		configReader.read();
 		GroupReader groupReader = new GroupReader(configReader.getGroupPath());
 		groupReader.read();
 		JsonObject jsonObj = groupReader.getGroupsGid(gid);
-		return jsonObj != null ? jsonObj.toString() : "";
+		return ResponseEntity.ok().body(jsonObj != null ? jsonObj.toString() : "");
+	}
+	
+	@ExceptionHandler(Exception.class)
+	public @ResponseBody String handlerSameControllerExceptions(final Exception e) {
+		String steStr = "";
+		for (StackTraceElement ste : e.getStackTrace()) {
+			steStr += ste.toString() + "\n";
+		}
+		JsonObject jsonObj = Json.createObjectBuilder()
+				.add("errortype", e.getClass().toString())
+				.add("stacktrace", steStr)
+				.build();
+		return jsonObj.toString();
 	}
 }
