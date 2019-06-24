@@ -180,8 +180,13 @@ public class BrainCorpController {
 		return ResponseEntity.ok().body(jsonObj != null ? jsonObj.toString() : "");
 	}
 	
+	/**
+	 * Captures the exceptions that occur for this controller. Returns them into a
+	 * json string with keys errortype (corresponding to exception type) and
+	 * stacktrace (the printstacktrace).
+	 */
 	@ExceptionHandler(Exception.class)
-	public @ResponseBody String handlerSameControllerExceptions(final Exception e) {
+	public @ResponseBody String handlerExceptions(final Exception e) {
 		String steStr = "";
 		for (StackTraceElement ste : e.getStackTrace()) {
 			steStr += ste.toString() + "\n";
