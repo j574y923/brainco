@@ -9,20 +9,19 @@ public class ConfigReader {
 
 	public static final String CONFIG_PATH = ".";
 	public static final String CONFIG_NAME = "config.properties";
-	
+
 	private String passwdPath = "";
 	private String groupPath = "";
-	
+
 	public void read() throws IOException {
-        InputStream input = new FileInputStream(CONFIG_PATH + "/" + CONFIG_NAME);
+		InputStream input = new FileInputStream(CONFIG_PATH + "/" + CONFIG_NAME);
 
-            Properties prop = new Properties();
+		Properties prop = new Properties();
 
-            prop.load(input);
+		prop.load(input);
 
-            passwdPath = prop.getProperty("passwd");
-            groupPath = prop.getProperty("group");
-
+		passwdPath = prop.getProperty("passwd");
+		groupPath = prop.getProperty("group");
 	}
 	
 	public String getPasswdPath() {
