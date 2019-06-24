@@ -1,4 +1,4 @@
-package com.example.demo;
+package rest;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,6 +11,7 @@ public class Brainco1ApplicationTests {
 
 	@Test
 	public void contextLoads() {
+		
 	}
 
 }
