@@ -35,9 +35,9 @@
 		</dependency>
 		
 		<dependency>
-			<groupId>org.glassfish</groupId>
-			<artifactId>javax.json</artifactId>
-			<version>1.0.4</version>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20171018</version>
 		</dependency>
 	</dependencies>
 

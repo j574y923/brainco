@@ -1,5 +1,6 @@
 package rest;
 
+import org.json.JSONObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -10,9 +11,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.IOException;
 import java.util.List;
-
-import javax.json.Json;
-import javax.json.JsonObject;
 
 /**
  * This service is a minimal HTTP service that exposes the user and group
@@ -92,7 +90,7 @@ public class BrainCorpController {
 		configReader.read();
 		PasswdReader passwdReader = new PasswdReader(configReader.getPasswdPath());
 		passwdReader.read();
-		JsonObject jsonObj = passwdReader.getUsersUid(uid);
+		JSONObject jsonObj = passwdReader.getUsersUid(uid);
 		return ResponseEntity.ok().body(jsonObj != null ? jsonObj.toString() : "");
     }
 
@@ -111,7 +109,7 @@ public class BrainCorpController {
 		passwdReader.read();
 		
 		// find username
-		JsonObject jsonObj = passwdReader.getUsersUid(uid);
+		JSONObject jsonObj = passwdReader.getUsersUid(uid);
 		String username = jsonObj.get("name").toString();
 		
 		// create json array with groups with username
@@ -176,7 +174,7 @@ public class BrainCorpController {
 		configReader.read();
 		GroupReader groupReader = new GroupReader(configReader.getGroupPath());
 		groupReader.read();
-		JsonObject jsonObj = groupReader.getGroupsGid(gid);
+		JSONObject jsonObj = groupReader.getGroupsGid(gid);
 		return ResponseEntity.ok().body(jsonObj != null ? jsonObj.toString() : "");
 	}
 	
@@ -191,10 +189,9 @@ public class BrainCorpController {
 		for (StackTraceElement ste : e.getStackTrace()) {
 			steStr += ste.toString() + "\n";
 		}
-		JsonObject jsonObj = Json.createObjectBuilder()
-				.add("errortype", e.getClass().toString())
-				.add("stacktrace", steStr)
-				.build();
+		JSONObject jsonObj = new JSONObject();
+		jsonObj.put("errortype", e.getClass().toString());
+		jsonObj.put("stacktrace", steStr);
 		return ResponseEntity.ok().body(jsonObj.toString());
 	}
 }

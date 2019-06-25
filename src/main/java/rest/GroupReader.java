@@ -8,59 +8,50 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonNumber;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonString;
-import javax.json.JsonValue;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class GroupReader {
 	
 	private String groupPath = "";
 	private String contents = "";
-	private JsonArray contentsJson = null;
+	private JSONArray contentsJson = null;
 	
-	public GroupReader(String passwdPath) {
-		this.groupPath = passwdPath;
+	public GroupReader(String groupPath) {
+		this.groupPath = groupPath;
 	}
 	
-	public void read() {
-		try (InputStream input = new FileInputStream(groupPath)) {
-			BufferedReader buf = new BufferedReader(new InputStreamReader(input));
-			String line = buf.readLine();
-			StringBuilder sb = new StringBuilder();
+	public void read() throws IOException {
+		InputStream input = new FileInputStream(groupPath);
+		BufferedReader buf = new BufferedReader(new InputStreamReader(input));
+		String line = buf.readLine();
+		StringBuilder sb = new StringBuilder();
 
-			while (line != null) {
-				sb.append(line).append("\n");
-				line = buf.readLine();
-			}
-			contents = sb.toString();
-			readToJSON(contents);
-
-		} catch (IOException ex) {
-			ex.printStackTrace();
+		while (line != null) {
+			sb.append(line).append("\n");
+			line = buf.readLine();
 		}
+		buf.close();
+		contents = sb.toString();
+		readToJSON(contents);
 	}
 	
 	private void readToJSON(String passwdContents) {
-		JsonArrayBuilder jsonArrBuilder = Json.createArrayBuilder();
+		JSONArray jsonArr = new JSONArray();
 		String[] lines = passwdContents.split("\n");
 		for(String line : lines) {
 			// initialize json values
-			JsonObjectBuilder jsonBuilder = Json.createObjectBuilder()
-					.add("name", "")
-					.add("gid", -1)
-					.add("members", Json.createArrayBuilder());
+			JSONObject jsonObj = new JSONObject();
+			jsonObj.put("name", "");
+			jsonObj.put("gid", -1);
+			jsonObj.put("members", new JSONArray());
 			
 			// fill in json values
 			String[] values = line.split(":");
 			for(int i = 0; i < values.length; i++) {
 				switch(i) {
 				case 0:
-					jsonBuilder.add("name", values[0]);
+					jsonObj.put("name", values[0]);
 					break;
 				case 2:
 					int gid = -1;
@@ -70,89 +61,87 @@ public class GroupReader {
 						gid = -1;
 						e.printStackTrace();
 					}
-					jsonBuilder.add("gid", gid);
+					jsonObj.put("gid", gid);
 					break;
 				case 3:
-					JsonArrayBuilder jsonMembersArrBuilder = Json.createArrayBuilder();
+					JSONArray jsonMembers = new JSONArray();
 					String[] valuesMembers = values[3].split(",");
 					for(String valuesMember : valuesMembers ) {
-						jsonMembersArrBuilder.add(valuesMember);
+						jsonMembers.put(valuesMember);
 					}
-					jsonBuilder.add("members", jsonMembersArrBuilder);
+					jsonObj.put("members", jsonMembers);
 					break;
 				}
 			}
 			
-			jsonArrBuilder.add(jsonBuilder);
+			jsonArr.put(jsonObj);
 		}
-		contentsJson = jsonArrBuilder.build();
+		contentsJson = jsonArr;
 	}
 	
 	public String getContents() {
 		return contents;
 	}
 	
-	public JsonArray getContentsJson() {
+	public JSONArray getContentsJson() {
 		return contentsJson;
 	}
 	
-	public JsonArray getGroupsUsername(String username) {
+	public JSONArray getGroupsUsername(String username) {
 
-		JsonArrayBuilder jsonArrBuilder = Json.createArrayBuilder();
+		JSONArray newJsonArr = new JSONArray();
 		if (!username.equals("")) {
-			JsonArray jsonArr = contentsJson;
-			for(JsonValue jsonObj : jsonArr) {
-				JsonArray jsonMembers = (JsonArray) ((JsonObject)jsonObj).get("members");
-				for(JsonValue jsonMember : jsonMembers) {
+			JSONArray jsonArr = contentsJson;
+			for(Object jsonObj : jsonArr) {
+				JSONArray jsonMembers = (JSONArray) ((JSONObject)jsonObj).get("members");
+				for(Object jsonMember : jsonMembers) {
 					if (jsonMember.toString().equals(username)) {
-						jsonArrBuilder.add(jsonObj);
+						newJsonArr.put(jsonObj);
 					}
 				}
 			}
 		}
 		
-		return jsonArrBuilder.build();
+		return newJsonArr;
 	}
 
-	public JsonArray getGroupsQuery(String name, String gid, List<String> member) {
+	public JSONArray getGroupsQuery(String name, String gid, List<String> member) {
 
-		JsonArrayBuilder jsonArrBuilder = Json.createArrayBuilder();
-		JsonArray jsonArr = contentsJson;
-		for(JsonValue jsonObj : jsonArr) {
+		JSONArray jsonArr = contentsJson;
+		JSONArray newJsonArr = new JSONArray();
+		for(Object jsonObj : jsonArr) {
 			if (name != null) {
-				JsonString jsonName = (JsonString) ((JsonObject) jsonObj).get("name");
-				String jsonNameTidy = jsonName.toString();
-				jsonNameTidy = jsonNameTidy.substring(1, jsonNameTidy.length() - 1);
-				if (!jsonNameTidy.equals(name))
+				String jsonName = (String) ((JSONObject) jsonObj).get("name");
+				if (!jsonName.equals(name))
 					continue;
 			}
 			if (gid != null) {
-				JsonNumber jsonGid = (JsonNumber) ((JsonObject)jsonObj).get("gid");
+				Integer jsonGid = (Integer) ((JSONObject)jsonObj).get("gid");
 				if (!jsonGid.toString().equals(gid))
 					continue;
 			}
 			if (member != null) {
-				JsonArray jsonMembers = (JsonArray) ((JsonObject)jsonObj).get("members");
+				JSONArray jsonMembers = (JSONArray) ((JSONObject)jsonObj).get("members");
 				List<String> strMembers = new ArrayList<String>();
-				for (int i = 0; i < jsonMembers.size(); i++) {
+				for (int i = 0; i < jsonMembers.length(); i++) {
 					strMembers.add(jsonMembers.getString(i));
 				}
 				if (!strMembers.containsAll(member))
 					continue;
 			}
 			
-			jsonArrBuilder.add(jsonObj);
+			newJsonArr.put(jsonObj);
 		}
-		return jsonArrBuilder.build();
+		return newJsonArr;
 	}
 	
-	public JsonObject getGroupsGid(String gid) {
+	public JSONObject getGroupsGid(String gid) {
 
-		JsonArray jsonArr = contentsJson;
-		for (JsonValue jsonObj : jsonArr) {
-			JsonNumber jsonGid = (JsonNumber) ((JsonObject) jsonObj).get("gid");
+		JSONArray jsonArr = contentsJson;
+		for (Object jsonObj : jsonArr) {
+			Integer jsonGid = (Integer) ((JSONObject) jsonObj).get("gid");
 			if (jsonGid.toString().equals(gid))
-				return (JsonObject) jsonObj;
+				return (JSONObject) jsonObj;
 		}
 		return null;
 	}
