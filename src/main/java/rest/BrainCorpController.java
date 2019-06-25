@@ -192,6 +192,6 @@ public class BrainCorpController {
 		JSONObject jsonObj = new JSONObject();
 		jsonObj.put("errortype", e.getClass().toString());
 		jsonObj.put("stacktrace", steStr);
-		return ResponseEntity.ok().body(jsonObj.toString());
+		return ResponseEntity.badRequest().body(jsonObj.toString());
 	}
 }
