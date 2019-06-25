@@ -2,8 +2,8 @@
 
 1. Ensure JDK is installed. 
 2. Ensure mvn is installed.
-3. git clone
-4. cd to your project
+3. `git clone` this project
+4. `cd` to your project
 5. do `mvn clean install`
 
 
