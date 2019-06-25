@@ -8,8 +8,8 @@
 
 
 ### To test:
-edit config.properties and set `passwd=./etc/test/passwd` and set `group=./etc/test/group`
-do `mvn clean install`
+1. edit config.properties and set `passwd=./etc/test/passwd` and set `group=./etc/test/group`
+2. do `mvn clean install`
 
 ### To run:
-do `mvn spring-boot:run`
+1. do `mvn spring-boot:run`
