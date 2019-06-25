@@ -92,9 +92,11 @@ public class GroupReader {
 		JSONArray newJsonArr = new JSONArray();
 		if (!username.equals("")) {
 			JSONArray jsonArr = contentsJson;
-			for(Object jsonObj : jsonArr) {
-				JSONArray jsonMembers = (JSONArray) ((JSONObject)jsonObj).get("members");
-				for(Object jsonMember : jsonMembers) {
+			for (int i = 0; i < jsonArr.length(); i++) {
+				Object jsonObj = jsonArr.get(i);
+				JSONArray jsonMembers = (JSONArray) ((JSONObject) jsonObj).get("members");
+				for (int j = 0; j < jsonMembers.length(); j++) {
+					Object jsonMember = jsonMembers.get(j);
 					if (jsonMember.toString().equals(username)) {
 						newJsonArr.put(jsonObj);
 					}
@@ -109,7 +111,8 @@ public class GroupReader {
 
 		JSONArray jsonArr = contentsJson;
 		JSONArray newJsonArr = new JSONArray();
-		for(Object jsonObj : jsonArr) {
+		for(int i = 0 ;i < jsonArr.length(); i++) {
+			Object jsonObj = jsonArr.get(i);
 			if (name != null) {
 				String jsonName = (String) ((JSONObject) jsonObj).get("name");
 				if (!jsonName.equals(name))
@@ -123,8 +126,8 @@ public class GroupReader {
 			if (member != null) {
 				JSONArray jsonMembers = (JSONArray) ((JSONObject)jsonObj).get("members");
 				List<String> strMembers = new ArrayList<String>();
-				for (int i = 0; i < jsonMembers.length(); i++) {
-					strMembers.add(jsonMembers.getString(i));
+				for (int j = 0; j < jsonMembers.length(); j++) {
+					strMembers.add(jsonMembers.getString(j));
 				}
 				if (!strMembers.containsAll(member))
 					continue;
@@ -138,7 +141,8 @@ public class GroupReader {
 	public JSONObject getGroupsGid(String gid) {
 
 		JSONArray jsonArr = contentsJson;
-		for (Object jsonObj : jsonArr) {
+		for (int i = 0; i < jsonArr.length(); i++) {
+			Object jsonObj = jsonArr.get(i);
 			Integer jsonGid = (Integer) ((JSONObject) jsonObj).get("gid");
 			if (jsonGid.toString().equals(gid))
 				return (JSONObject) jsonObj;

@@ -104,7 +104,8 @@ public class PasswdReader {
 
 		JSONArray jsonArr = contentsJson;
 		JSONArray newJsonArr = new JSONArray();
-		for (Object jsonObj : jsonArr) {
+		for (int i = 0; i < jsonArr.length(); i++) {
+			Object jsonObj = jsonArr.get(i);
 			if (name != null) {
 				String jsonName = (String) ((JSONObject) jsonObj).get("name");
 				if (!jsonName.equals(name))

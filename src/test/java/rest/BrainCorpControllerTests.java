@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 
@@ -76,19 +77,18 @@ public class BrainCorpControllerTests {
 		writer.println(testPasswd);
 		writer.close();
 
-		// getUsers()
+		// getUserQuery()
 		MockMvc mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-		//FIXME:
-		System.out.println("WTF?2?");
-		MvcResult result = mvc.perform(get("/users/query").param("param", "/sbin/nologin")
+		MvcResult result = mvc.perform(get("/users/query").param("shell", "/sbin/nologin")
 				.accept(MediaType.APPLICATION_JSON)).andDo(print()).andExpect(status().isOk()).andReturn();
 
 		// verify data
-		String jsonStrExpected = "[{\"uid\":1,\"gid\":1,\"shell\":\"/sbin/nologin\",\"root\":\"/\",\"name\":\"bin\",\"comment\":\"\"},{\"uid\":2,\"gid\":2,\"shell\":\"/sbin/nologin\",\"root\":\"/\",\"name\":\"daemon\",\"comment\":\"\"},{\"uid\":8,\"gid\":12,\"shell\":\"/sbin/nologin\",\"root\":\"/var/spool/mail\",\"name\":\"mail\",\"comment\":\"\"},{\"uid\":14,\"gid\":11,\"shell\":\"/sbin/nologin\",\"root\":\"/srv/ftp\",\"name\":\"ftp\",\"comment\":\"\"}]";
+		String jsonStrExpected = "[{\"uid\":1,\"gid\":1,\"shell\":\"/sbin/nologin\",\"root\":\"/\",\"name\":\"bin\",\"comment\":\"\"},"
+				+ "{\"uid\":2,\"gid\":2,\"shell\":\"/sbin/nologin\",\"root\":\"/\",\"name\":\"daemon\",\"comment\":\"\"},"
+				+ "{\"uid\":8,\"gid\":12,\"shell\":\"/sbin/nologin\",\"root\":\"/var/spool/mail\",\"name\":\"mail\",\"comment\":\"\"},"
+				+ "{\"uid\":14,\"gid\":11,\"shell\":\"/sbin/nologin\",\"root\":\"/srv/ftp\",\"name\":\"ftp\",\"comment\":\"\"}]";
 		JSONArray jsonArrExpected = new JSONArray(jsonStrExpected);
 		String jsonStrActual = result.getResponse().getContentAsString();
-		System.out.println("WTF??");
-		System.out.println(jsonStrActual);
 		JSONArray jsonArrActual = new JSONArray(jsonStrActual);
 		JSONAssert.assertEquals(jsonArrExpected, jsonArrActual, JSONCompareMode.LENIENT);
 	}
@@ -109,21 +109,21 @@ public class BrainCorpControllerTests {
 		writer.println(testPasswd);
 		writer.close();
 		
-		// getUsers()
+		// getUsersUid()
 		MockMvc mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 		MvcResult result = mvc.perform(get("/users/{uid}", 8)
 				.accept(MediaType.APPLICATION_JSON)).andDo(print()).andExpect(status().isOk()).andReturn();
 		
 		// verify data
 		String jsonStrExpected = "{\"uid\":8,\"gid\":12,\"shell\":\"/sbin/nologin\",\"root\":\"/var/spool/mail\",\"name\":\"mail\",\"comment\":\"\"}";
-		JSONObject jsonArrExpected = new JSONObject(jsonStrExpected);
+		JSONObject jsonObjExpected = new JSONObject(jsonStrExpected);
 		String jsonStrActual = result.getResponse().getContentAsString();
-		JSONObject jsonArrActual = new JSONObject(jsonStrActual);
-		JSONAssert.assertEquals(jsonArrExpected, jsonArrActual, JSONCompareMode.LENIENT);
+		JSONObject jsonObjActual = new JSONObject(jsonStrActual);
+		JSONAssert.assertEquals(jsonObjExpected, jsonObjActual, JSONCompareMode.LENIENT);
 	}
 
 	@Test
-	public void shouldGetGroupsUid() {
+	public void shouldGetGroupsUid() throws Exception {
 		// tell user to use ./etc/passwd and ./etc/group for config
 		String passwdPath = "./etc/passwd";
 		String groupPath = "./etc/group";
@@ -154,13 +154,24 @@ public class BrainCorpControllerTests {
 				"tty:x:5:\n" + 
 				"utmp:x:996:\n" + 
 				"audio:x:995:root,user1,user2,user3";
+		PrintWriter writer = new PrintWriter(passwdPath);
+		writer.println(testPasswd);
+		writer.close();
+		writer = new PrintWriter(groupPath);
+		writer.println(testGroup);
+		writer.close();
 		
-		// getUsers()
-		InputStream in = null; //TODO: read get request
+		// getGroupsUid()
+		MockMvc mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+		MvcResult result = mvc.perform(get("/users/{uid}/groups", 0)
+				.accept(MediaType.APPLICATION_JSON)).andDo(print()).andExpect(status().isOk()).andReturn();
 		
 		// verify data
-//		JsonArray jsonArr = Json.createReader(in).readArray();
-//		assertEquals(1,2);
+		String jsonStrExpected = "[{\"gid\":0,\"members\":[\"root\"],\"name\":\"root\"},{\"gid\":995,\"members\":[\"root\",\"user1\",\"user2\",\"user3\"],\"name\":\"audio\"}]";
+		JSONArray jsonArrExpected = new JSONArray(jsonStrExpected);
+		String jsonStrActual = result.getResponse().getContentAsString();
+		JSONArray jsonArrActual = new JSONArray(jsonStrActual);
+		JSONAssert.assertEquals(jsonArrExpected, jsonArrActual, JSONCompareMode.LENIENT);
 	}
 
 	@Test
@@ -193,7 +204,7 @@ public class BrainCorpControllerTests {
 		writer.println(testGroup);
 		writer.close();
 
-		// getUsers()
+		// getGroups()
 		MockMvc mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 		MvcResult result = mvc.perform(get("/groups").accept(MediaType.APPLICATION_JSON)).andDo(print()).andExpect(status().isOk())
 				.andReturn();
@@ -216,7 +227,7 @@ public class BrainCorpControllerTests {
 	}
 
 	@Test
-	public void shouldGetGroupsQuery() {
+	public void shouldGetGroupsQuery() throws Exception {
 
 		// tell user to use ./etc/passwd and ./etc/group for config
 		String groupPath = "./etc/group";
@@ -242,15 +253,26 @@ public class BrainCorpControllerTests {
 				"tty:x:5:\n" + 
 				"utmp:x:996:\n" + 
 				"audio:x:995:root,user1,user2,user3";
-		
-		// getUsers()
-		InputStream in = null; //TODO: read get request
-		
+		PrintWriter writer = new PrintWriter(groupPath);
+		writer.println(testGroup);
+		writer.close();
+
+		// getGroupsQuery()
+		MockMvc mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+		MvcResult result = mvc.perform(
+				get("/groups/query").param("member", "root").param("member", "user1").accept(MediaType.APPLICATION_JSON))
+				.andDo(print()).andExpect(status().isOk()).andReturn();
+
 		// verify data
+		String jsonStrExpected = "[{\"gid\":995,\"members\":[\"root\",\"user1\",\"user2\",\"user3\"],\"name\":\"audio\"}]";
+		JSONArray jsonArrExpected = new JSONArray(jsonStrExpected);
+		String jsonStrActual = result.getResponse().getContentAsString();
+		JSONArray jsonArrActual = new JSONArray(jsonStrActual);
+		JSONAssert.assertEquals(jsonArrExpected, jsonArrActual, JSONCompareMode.LENIENT);
 	}
 
 	@Test
-	public void shouldGetGroupsGid() {
+	public void shouldGetGroupsGid() throws Exception {
 
 		// tell user to use ./etc/passwd and ./etc/group for config
 		String groupPath = "./etc/group";
@@ -276,11 +298,22 @@ public class BrainCorpControllerTests {
 				"tty:x:5:\n" + 
 				"utmp:x:996:\n" + 
 				"audio:x:995:root,user1,user2,user3";
-		
-		// getUsers()
-		InputStream in = null; //TODO: read get request
-		
+		PrintWriter writer = new PrintWriter(groupPath);
+		writer.println(testGroup);
+		writer.close();
+
+		// getGroupsQuery()
+		MockMvc mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+		MvcResult result = mvc.perform(
+				get("/groups/{gid}", 995).accept(MediaType.APPLICATION_JSON))
+				.andDo(print()).andExpect(status().isOk()).andReturn();
+
 		// verify data
+		String jsonStrExpected = "{\"gid\":995,\"members\":[\"root\",\"user1\",\"user2\",\"user3\"],\"name\":\"audio\"}";
+		JSONObject jsonObjExpected = new JSONObject(jsonStrExpected);
+		String jsonStrActual = result.getResponse().getContentAsString();
+		JSONObject jsonObjActual = new JSONObject(jsonStrActual);
+		JSONAssert.assertEquals(jsonObjExpected, jsonObjActual, JSONCompareMode.LENIENT);
 	}
 
 }
