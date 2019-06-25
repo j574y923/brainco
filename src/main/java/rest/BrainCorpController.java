@@ -40,12 +40,12 @@ public class BrainCorpController {
 	 * @throws IOException 
 	 */
 	@RequestMapping("/users")
-	public @ResponseBody String getUsers() throws IOException {
+	public @ResponseBody ResponseEntity<String> getUsers() throws IOException {
 		ConfigReader configReader = new ConfigReader();
 		configReader.read();
 		PasswdReader passwdReader = new PasswdReader(configReader.getPasswdPath());
 		passwdReader.read();
-		return passwdReader.getContentsJson().toString();
+		return ResponseEntity.ok().body(passwdReader.getContentsJson().toString());
 	}
 
 	/**
@@ -67,7 +67,7 @@ public class BrainCorpController {
 	 * @throws IOException 
 	 */
 	@RequestMapping("/users/query")
-	public @ResponseBody String getUsersQuery(@RequestParam(required = false) String name,
+	public @ResponseBody ResponseEntity<String> getUsersQuery(@RequestParam(required = false) String name,
 			@RequestParam(required = false) String uid, @RequestParam(required = false) String gid,
 			@RequestParam(required = false) String comment,
 			@RequestParam(required = false) String home,
@@ -76,7 +76,7 @@ public class BrainCorpController {
 		configReader.read();
 		PasswdReader passwdReader = new PasswdReader(configReader.getPasswdPath());
 		passwdReader.read();
-		return passwdReader.getUsersQuery(name, uid, gid, comment, home, shell).toString();
+		return ResponseEntity.ok().body(passwdReader.getUsersQuery(name, uid, gid, comment, home, shell).toString());
 	}
 
 	/**
@@ -87,13 +87,13 @@ public class BrainCorpController {
 	 * @throws IOException 
 	 */
 	@RequestMapping(value = "/users/{uid}")
-	public @ResponseBody String getUsersUid(@PathVariable("uid") String uid) throws IOException {
+	public @ResponseBody ResponseEntity<String> getUsersUid(@PathVariable("uid") String uid) throws IOException {
 		ConfigReader configReader = new ConfigReader();
 		configReader.read();
 		PasswdReader passwdReader = new PasswdReader(configReader.getPasswdPath());
 		passwdReader.read();
 		JsonObject jsonObj = passwdReader.getUsersUid(uid);
-		return jsonObj != null ? jsonObj.toString() : "";
+		return ResponseEntity.ok().body(jsonObj != null ? jsonObj.toString() : "");
     }
 
 	/**
@@ -104,7 +104,7 @@ public class BrainCorpController {
 	 * @throws IOException 
 	 */
 	@RequestMapping(value = "/users/{uid}/groups")
-	public @ResponseBody String getGroupsUid(@PathVariable("uid") String uid) throws IOException {
+	public @ResponseBody ResponseEntity<String> getGroupsUid(@PathVariable("uid") String uid) throws IOException {
 		ConfigReader configReader = new ConfigReader();
 		configReader.read();
 		PasswdReader passwdReader = new PasswdReader(configReader.getPasswdPath());
@@ -117,7 +117,7 @@ public class BrainCorpController {
 		// create json array with groups with username
 		GroupReader groupReader = new GroupReader(configReader.getGroupPath());
 		groupReader.read();
-		return groupReader.getGroupsUsername(username).toString();
+		return ResponseEntity.ok().body(groupReader.getGroupsUsername(username).toString());
     }
 
 	/**
@@ -129,12 +129,12 @@ public class BrainCorpController {
 	 * @throws IOException 
 	 */
 	@RequestMapping(value = "/groups")
-	public @ResponseBody String getGroups() throws IOException {
+	public @ResponseBody ResponseEntity<String> getGroups() throws IOException {
 		ConfigReader configReader = new ConfigReader();
 		configReader.read();
 		GroupReader groupReader = new GroupReader(configReader.getGroupPath());
 		groupReader.read();
-		return groupReader.getContentsJson().toString();
+		return ResponseEntity.ok().body(groupReader.getContentsJson().toString());
     }
 
 	/**
@@ -154,14 +154,14 @@ public class BrainCorpController {
 	 * @throws IOException 
 	 */
 	@RequestMapping(value = "/groups/query")
-	public @ResponseBody String getGroupsQuery(@RequestParam(required = false) String name,
+	public @ResponseBody ResponseEntity<String> getGroupsQuery(@RequestParam(required = false) String name,
 			@RequestParam(required = false) String gid,
 			@RequestParam(required = false) List<String> member) throws IOException {
 		ConfigReader configReader = new ConfigReader();
 		configReader.read();
 		GroupReader groupReader = new GroupReader(configReader.getGroupPath());
 		groupReader.read();
-		return groupReader.getGroupsQuery(name, gid, member).toString();
+		return ResponseEntity.ok().body(groupReader.getGroupsQuery(name, gid, member).toString());
 	}
 
 	/**
@@ -186,7 +186,7 @@ public class BrainCorpController {
 	 * stacktrace (the printstacktrace).
 	 */
 	@ExceptionHandler(Exception.class)
-	public @ResponseBody String handlerExceptions(final Exception e) {
+	public @ResponseBody ResponseEntity<String> handlerExceptions(final Exception e) {
 		String steStr = "";
 		for (StackTraceElement ste : e.getStackTrace()) {
 			steStr += ste.toString() + "\n";
@@ -195,6 +195,6 @@ public class BrainCorpController {
 				.add("errortype", e.getClass().toString())
 				.add("stacktrace", steStr)
 				.build();
-		return jsonObj.toString();
+		return ResponseEntity.ok().body(jsonObj.toString());
 	}
 }
