@@ -4,8 +4,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 
 import org.json.JSONArray;
@@ -32,8 +30,8 @@ public class BrainCorpControllerTests {
 	
 	@Test
 	public void shouldGetUsers() throws Exception {
-		// tell user to use ./etc/passwd and ./etc/group for config
-		String passwdPath = "./etc/passwd";
+		// tell user to use ./etc/test/passwd and ./etc/test/group for config
+		String passwdPath = "./etc/test/passwd";
 		
 		// overwrite passwd with test data
 		String testPasswd = "root:x:0:0::/root:/usr/bin/zsh\n" + 
@@ -64,8 +62,8 @@ public class BrainCorpControllerTests {
 
 	@Test
 	public void shouldGetUsersQuery() throws Exception {
-		// tell user to use ./etc/passwd and ./etc/group for config
-		String passwdPath = "./etc/passwd";
+		// tell user to use ./etc/test/passwd and ./etc/test/group for config
+		String passwdPath = "./etc/test/passwd";
 		
 		// overwrite passwd with test data
 		String testPasswd = "root:x:0:0::/root:/usr/bin/zsh\n" + 
@@ -96,8 +94,8 @@ public class BrainCorpControllerTests {
 	@Test
 	public void shouldGetUsersUid() throws Exception {
 
-		// tell user to use ./etc/passwd and ./etc/group for config
-		String passwdPath = "./etc/passwd";
+		// tell user to use ./etc/test/passwd and ./etc/test/group for config
+		String passwdPath = "./etc/test/passwd";
 		
 		// overwrite passwd with test data
 		String testPasswd = "root:x:0:0::/root:/usr/bin/zsh\n" + 
@@ -124,9 +122,9 @@ public class BrainCorpControllerTests {
 
 	@Test
 	public void shouldGetGroupsUid() throws Exception {
-		// tell user to use ./etc/passwd and ./etc/group for config
-		String passwdPath = "./etc/passwd";
-		String groupPath = "./etc/group";
+		// tell user to use ./etc/test/passwd and ./etc/test/group for config
+		String passwdPath = "./etc/test/passwd";
+		String groupPath = "./etc/test/group";
 		
 		// overwrite passwd AND group files with test data
 		String testPasswd = "root:x:0:0::/root:/usr/bin/zsh\n" + 
@@ -176,8 +174,8 @@ public class BrainCorpControllerTests {
 
 	@Test
 	public void shouldGetGroups() throws Exception {
-		// tell user to use ./etc/passwd and ./etc/group for config
-		String groupPath = "./etc/group";
+		// tell user to use ./etc/test/group for config
+		String groupPath = "./etc/test/group";
 		
 		// overwrite passwd with test data
 		String testGroup = "root:x:0:root\n" + 
@@ -229,8 +227,8 @@ public class BrainCorpControllerTests {
 	@Test
 	public void shouldGetGroupsQuery() throws Exception {
 
-		// tell user to use ./etc/passwd and ./etc/group for config
-		String groupPath = "./etc/group";
+		// tell user to use ./etc/test/group for config
+		String groupPath = "./etc/test/group";
 		
 		// overwrite group with test data
 		String testGroup = "root:x:0:root\n" + 
@@ -274,8 +272,8 @@ public class BrainCorpControllerTests {
 	@Test
 	public void shouldGetGroupsGid() throws Exception {
 
-		// tell user to use ./etc/passwd and ./etc/group for config
-		String groupPath = "./etc/group";
+		// tell user to use ./etc/test/group for config
+		String groupPath = "./etc/test/group";
 		
 		// overwrite group with test data
 		String testGroup = "root:x:0:root\n" + 
@@ -302,7 +300,7 @@ public class BrainCorpControllerTests {
 		writer.println(testGroup);
 		writer.close();
 
-		// getGroupsQuery()
+		// getGroupsGid()
 		MockMvc mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 		MvcResult result = mvc.perform(
 				get("/groups/{gid}", 995).accept(MediaType.APPLICATION_JSON))
