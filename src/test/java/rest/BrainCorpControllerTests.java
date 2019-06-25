@@ -4,15 +4,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.InputStream;
-import java.io.StringReader;
+import java.io.PrintWriter;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-
+import org.json.JSONArray;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -32,32 +30,37 @@ public class BrainCorpControllerTests {
 	@Test
 	public void shouldGetUsers() throws Exception {
 		// tell user to use ./etc/passwd and ./etc/group for config
-//		String passwdPath = "./etc/passwd";
-//		
-//		// overwrite passwd with test data
-//		String testPasswd = "root:x:0:0::/root:/usr/bin/zsh\n" + 
-//				"bin:x:1:1::/:/sbin/nologin\n" + 
-//				"daemon:x:2:2::/:/sbin/nologin\n" + 
-//				"mail:x:8:12::/var/spool/mail:/sbin/nologin\n" + 
-//				"ftp:x:14:11::/srv/ftp:/sbin/nologin";
-//		OutputStream out = null;//TODO: write to 
-//		
-//		// getUsers()
+		String passwdPath = "./etc/passwd";
+		
+		// overwrite passwd with test data
+		String testPasswd = "root:x:0:0::/root:/usr/bin/zsh\n" + 
+				"bin:x:1:1::/:/sbin/nologin\n" + 
+				"daemon:x:2:2::/:/sbin/nologin\n" + 
+				"mail:x:8:12::/var/spool/mail:/sbin/nologin\n" + 
+				"ftp:x:14:11::/srv/ftp:/sbin/nologin";
+		PrintWriter writer = new PrintWriter(passwdPath);
+		writer.println(testPasswd);
+		writer.close();
+		
+		// getUsers()
 		MockMvc mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 		MvcResult result = mvc.perform(get("/users").accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andReturn();
-//		
+		
 		// verify data
-		String jsonObjectStr = result.getResponse().getContentAsString();
-		System.out.println(jsonObjectStr);
-	    JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
-	    JsonArray jsonArr = jsonReader.readArray();
-	    jsonReader.close();
+		String jsonExpectedStr = "[{\"uid\":0,\"gid\":0,\"shell\":\"/usr/bin/zsh\",\"root\":\"/root\",\"name\":\"root\",\"comment\":\"\"},"
+				+ "{\"uid\":1,\"gid\":1,\"shell\":\"/sbin/nologin\",\"root\":\"/\",\"name\":\"bin\",\"comment\":\"\"},"
+				+ "{\"uid\":2,\"gid\":2,\"shell\":\"/sbin/nologin\",\"root\":\"/\",\"name\":\"daemon\",\"comment\":\"\"},"
+				+ "{\"uid\":8,\"gid\":12,\"shell\":\"/sbin/nologin\",\"root\":\"/var/spool/mail\",\"name\":\"mail\",\"comment\":\"\"},"
+				+ "{\"uid\":14,\"gid\":11,\"shell\":\"/sbin/nologin\",\"root\":\"/srv/ftp\",\"name\":\"ftp\",\"comment\":\"\"}]";
+		JSONArray jsonArrExpected = new JSONArray(jsonExpectedStr);
+		String jsonActualStr = result.getResponse().getContentAsString();
+		JSONArray jsonArrActual = new JSONArray(jsonActualStr);
+		JSONAssert.assertEquals(jsonArrExpected, jsonArrActual, JSONCompareMode.LENIENT);
 	}
 
 	@Test
-	public void shouldGetUsersQuery() {
-
+	public void shouldGetUsersQuery() throws Exception {
 		// tell user to use ./etc/passwd and ./etc/group for config
 		String passwdPath = "./etc/passwd";
 		
@@ -67,12 +70,22 @@ public class BrainCorpControllerTests {
 				"daemon:x:2:2::/:/sbin/nologin\n" + 
 				"mail:x:8:12::/var/spool/mail:/sbin/nologin\n" + 
 				"ftp:x:14:11::/srv/ftp:/sbin/nologin";
-		
+		PrintWriter writer = new PrintWriter(passwdPath);
+		writer.println(testPasswd);
+		writer.close();
+
 		// getUsers()
-		InputStream in = null; //TODO: read get request
-		
+		MockMvc mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+		//FIXME:
+		MvcResult result = mvc.perform(get("/users").param("shell", "/sbin/nologin")
+				.accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk()).andReturn();
+
 		// verify data
-		JsonArray jsonArr = Json.createReader(in).readArray();
+		String jsonStrExpected = "[{\"uid\":1,\"gid\":1,\"shell\":\"/sbin/nologin\",\"root\":\"/\",\"name\":\"bin\",\"comment\":\"\"},{\"uid\":2,\"gid\":2,\"shell\":\"/sbin/nologin\",\"root\":\"/\",\"name\":\"daemon\",\"comment\":\"\"},{\"uid\":8,\"gid\":12,\"shell\":\"/sbin/nologin\",\"root\":\"/var/spool/mail\",\"name\":\"mail\",\"comment\":\"\"},{\"uid\":14,\"gid\":11,\"shell\":\"/sbin/nologin\",\"root\":\"/srv/ftp\",\"name\":\"ftp\",\"comment\":\"\"}]";
+		JSONArray jsonArrExpected = new JSONArray(jsonStrExpected);
+		String jsonStrActual = result.getResponse().getContentAsString();
+		JSONArray jsonArrActual = new JSONArray(jsonStrActual);
+		JSONAssert.assertEquals(jsonArrExpected, jsonArrActual, JSONCompareMode.LENIENT);
 	}
 
 	@Test
@@ -92,7 +105,6 @@ public class BrainCorpControllerTests {
 		InputStream in = null; //TODO: read get request
 		
 		// verify data
-		JsonObject jsonObj = Json.createReader(in).readObject();
 	}
 
 	@Test
@@ -137,16 +149,15 @@ public class BrainCorpControllerTests {
 	}
 
 	@Test
-	public void shouldGetGroups() {
-
+	public void shouldGetGroups() throws Exception {
 		// tell user to use ./etc/passwd and ./etc/group for config
 		String groupPath = "./etc/group";
 		
-		// overwrite group with test data
+		// overwrite passwd with test data
 		String testGroup = "root:x:0:root\n" + 
 				"sys:x:3:bin\n" + 
 				"mem:x:8:\n" + 
-				"ftP:x:11:\n" + 
+				"ftp:x:11:\n" + 
 				"mail:x:12:\n" + 
 				"log:x:19:\n" + 
 				"smmsp:x:25:\n" + 
@@ -163,12 +174,30 @@ public class BrainCorpControllerTests {
 				"tty:x:5:\n" + 
 				"utmp:x:996:\n" + 
 				"audio:x:995:root,user1,user2,user3";
-		
+		PrintWriter writer = new PrintWriter(groupPath);
+		writer.println(testGroup);
+		writer.close();
+
 		// getUsers()
-		InputStream in = null; //TODO: read get request
-		
+		MockMvc mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+		MvcResult result = mvc.perform(get("/groups").accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andReturn();
+
 		// verify data
-		JsonArray jsonArr = Json.createReader(in).readArray();
+		String jsonStrExpected = "[{\"gid\":0,\"members\":[\"root\"],\"name\":\"root\"},{\"gid\":3,\"members\":[\"bin\"],\"name\":\"sys\"},"
+				+ "{\"gid\":8,\"members\":[],\"name\":\"mem\"},{\"gid\":11,\"members\":[],\"name\":\"ftp\"},"
+				+ "{\"gid\":12,\"members\":[],\"name\":\"mail\"},{\"gid\":19,\"members\":[],\"name\":\"log\"},"
+				+ "{\"gid\":25,\"members\":[],\"name\":\"smmsp\"},{\"gid\":26,\"members\":[],\"name\":\"proc\"},"
+				+ "{\"gid\":50,\"members\":[],\"name\":\"games\"},{\"gid\":54,\"members\":[],\"name\":\"lock\"},"
+				+ "{\"gid\":90,\"members\":[],\"name\":\"network\"},{\"gid\":94,\"members\":[],\"name\":\"floppy\"},"
+				+ "{\"gid\":96,\"members\":[],\"name\":\"scanner\"},{\"gid\":98,\"members\":[],\"name\":\"power\"},"
+				+ "{\"gid\":999,\"members\":[\"daemon\"],\"name\":\"adm\"},{\"gid\":998,\"members\":[],\"name\":\"wheel\"},"
+				+ "{\"gid\":997,\"members\":[],\"name\":\"kmem\"},{\"gid\":5,\"members\":[],\"name\":\"tty\"},"
+				+ "{\"gid\":996,\"members\":[],\"name\":\"utmp\"},{\"gid\":995,\"members\":[\"root\",\"user1\",\"user2\",\"user3\"],\"name\":\"audio\"}]";
+		JSONArray jsonArrExpected = new JSONArray(jsonStrExpected);
+		String jsonStrActual = result.getResponse().getContentAsString();
+		JSONArray jsonArrActual = new JSONArray(jsonStrActual);
+		JSONAssert.assertEquals(jsonArrExpected, jsonArrActual, JSONCompareMode.LENIENT);
 	}
 
 	@Test
@@ -203,7 +232,6 @@ public class BrainCorpControllerTests {
 		InputStream in = null; //TODO: read get request
 		
 		// verify data
-		JsonArray jsonArr = Json.createReader(in).readArray();
 	}
 
 	@Test
@@ -238,7 +266,6 @@ public class BrainCorpControllerTests {
 		InputStream in = null; //TODO: read get request
 		
 		// verify data
-		JsonObject jsonObj = Json.createReader(in).readObject();
 	}
 
 }
