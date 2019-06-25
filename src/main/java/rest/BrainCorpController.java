@@ -65,7 +65,7 @@ public class BrainCorpController {
 	 * @throws IOException 
 	 */
 	@RequestMapping("/users/query")
-	public @ResponseBody ResponseEntity<String> getUsersQuery(@RequestParam(required = false) String name,
+	public ResponseEntity<String> getUsersQuery(@RequestParam(required = false) String name,
 			@RequestParam(required = false) String uid, @RequestParam(required = false) String gid,
 			@RequestParam(required = false) String comment,
 			@RequestParam(required = false) String home,

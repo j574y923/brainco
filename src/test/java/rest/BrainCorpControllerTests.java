@@ -1,12 +1,14 @@
 package rest;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.InputStream;
 import java.io.PrintWriter;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -44,7 +46,7 @@ public class BrainCorpControllerTests {
 		
 		// getUsers()
 		MockMvc mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-		MvcResult result = mvc.perform(get("/users").accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		MvcResult result = mvc.perform(get("/users").accept(MediaType.APPLICATION_JSON)).andDo(print()).andExpect(status().isOk())
 				.andReturn();
 		
 		// verify data
@@ -77,19 +79,22 @@ public class BrainCorpControllerTests {
 		// getUsers()
 		MockMvc mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 		//FIXME:
-		MvcResult result = mvc.perform(get("/users").param("shell", "/sbin/nologin")
-				.accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk()).andReturn();
+		System.out.println("WTF?2?");
+		MvcResult result = mvc.perform(get("/users/query").param("param", "/sbin/nologin")
+				.accept(MediaType.APPLICATION_JSON)).andDo(print()).andExpect(status().isOk()).andReturn();
 
 		// verify data
 		String jsonStrExpected = "[{\"uid\":1,\"gid\":1,\"shell\":\"/sbin/nologin\",\"root\":\"/\",\"name\":\"bin\",\"comment\":\"\"},{\"uid\":2,\"gid\":2,\"shell\":\"/sbin/nologin\",\"root\":\"/\",\"name\":\"daemon\",\"comment\":\"\"},{\"uid\":8,\"gid\":12,\"shell\":\"/sbin/nologin\",\"root\":\"/var/spool/mail\",\"name\":\"mail\",\"comment\":\"\"},{\"uid\":14,\"gid\":11,\"shell\":\"/sbin/nologin\",\"root\":\"/srv/ftp\",\"name\":\"ftp\",\"comment\":\"\"}]";
 		JSONArray jsonArrExpected = new JSONArray(jsonStrExpected);
 		String jsonStrActual = result.getResponse().getContentAsString();
+		System.out.println("WTF??");
+		System.out.println(jsonStrActual);
 		JSONArray jsonArrActual = new JSONArray(jsonStrActual);
 		JSONAssert.assertEquals(jsonArrExpected, jsonArrActual, JSONCompareMode.LENIENT);
 	}
 
 	@Test
-	public void shouldGetUsersUid() {
+	public void shouldGetUsersUid() throws Exception {
 
 		// tell user to use ./etc/passwd and ./etc/group for config
 		String passwdPath = "./etc/passwd";
@@ -100,11 +105,21 @@ public class BrainCorpControllerTests {
 				"daemon:x:2:2::/:/sbin/nologin\n" + 
 				"mail:x:8:12::/var/spool/mail:/sbin/nologin\n" + 
 				"ftp:x:14:11::/srv/ftp:/sbin/nologin";
+		PrintWriter writer = new PrintWriter(passwdPath);
+		writer.println(testPasswd);
+		writer.close();
 		
 		// getUsers()
-		InputStream in = null; //TODO: read get request
+		MockMvc mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+		MvcResult result = mvc.perform(get("/users/{uid}", 8)
+				.accept(MediaType.APPLICATION_JSON)).andDo(print()).andExpect(status().isOk()).andReturn();
 		
 		// verify data
+		String jsonStrExpected = "{\"uid\":8,\"gid\":12,\"shell\":\"/sbin/nologin\",\"root\":\"/var/spool/mail\",\"name\":\"mail\",\"comment\":\"\"}";
+		JSONObject jsonArrExpected = new JSONObject(jsonStrExpected);
+		String jsonStrActual = result.getResponse().getContentAsString();
+		JSONObject jsonArrActual = new JSONObject(jsonStrActual);
+		JSONAssert.assertEquals(jsonArrExpected, jsonArrActual, JSONCompareMode.LENIENT);
 	}
 
 	@Test
@@ -180,7 +195,7 @@ public class BrainCorpControllerTests {
 
 		// getUsers()
 		MockMvc mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-		MvcResult result = mvc.perform(get("/groups").accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		MvcResult result = mvc.perform(get("/groups").accept(MediaType.APPLICATION_JSON)).andDo(print()).andExpect(status().isOk())
 				.andReturn();
 
 		// verify data

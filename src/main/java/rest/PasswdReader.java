@@ -144,7 +144,8 @@ public class PasswdReader {
 	public JSONObject getUsersUid(String uid) {
 
 		JSONArray jsonArr = contentsJson;
-		for(Object jsonObj : jsonArr) {
+		for(int i = 0 ; i < jsonArr.length(); i++) {
+			Object jsonObj = jsonArr.get(i);
 			Integer jsonUid = (Integer) ((JSONObject)jsonObj).get("uid");
 			if (jsonUid.toString().equals(uid))
 				return (JSONObject) jsonObj;
