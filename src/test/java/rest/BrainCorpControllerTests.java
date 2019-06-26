@@ -135,7 +135,7 @@ public class BrainCorpControllerTests {
 		String testGroup = "root:x:0:root\n" + 
 				"sys:x:3:bin\n" + 
 				"mem:x:8:\n" + 
-				"ftP:x:11:\n" + 
+				"ftp:x:11:\n" + 
 				"mail:x:12:\n" + 
 				"log:x:19:\n" + 
 				"smmsp:x:25:\n" + 
@@ -234,7 +234,7 @@ public class BrainCorpControllerTests {
 		String testGroup = "root:x:0:root\n" + 
 				"sys:x:3:bin\n" + 
 				"mem:x:8:\n" + 
-				"ftP:x:11:\n" + 
+				"ftp:x:11:\n" + 
 				"mail:x:12:\n" + 
 				"log:x:19:\n" + 
 				"smmsp:x:25:\n" + 
@@ -279,7 +279,7 @@ public class BrainCorpControllerTests {
 		String testGroup = "root:x:0:root\n" + 
 				"sys:x:3:bin\n" + 
 				"mem:x:8:\n" + 
-				"ftP:x:11:\n" + 
+				"ftp:x:11:\n" + 
 				"mail:x:12:\n" + 
 				"log:x:19:\n" + 
 				"smmsp:x:25:\n" + 
